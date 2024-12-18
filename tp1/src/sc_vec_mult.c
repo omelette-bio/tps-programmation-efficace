@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#define N 100000000
+#define N 500000000
 
 #ifdef DYNAMIC
 float* A;

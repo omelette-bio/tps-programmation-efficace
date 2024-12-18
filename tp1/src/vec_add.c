@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#define N 200000000
+#define N 260000000
 
 #ifdef DYNAMIC
 float *A, *B, *C;
@@ -31,7 +31,7 @@ int main()
 
     vect_add();
     
-    fprintf(stderr, "%f %f %f\n", C[100], C[200], C[300]);
+    fprintf(stderr, "%f\n", C[300]);
 
     #ifdef DYNAMIC
     free(A);
