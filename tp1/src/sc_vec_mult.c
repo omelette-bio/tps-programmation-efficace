@@ -31,7 +31,7 @@ int main()
 
     sc_vec_mult();
     
-    fprintf(stderr, "%f %f %f\n", A[500], A[5000], A[50000]);
+    fprintf(stdout, "%f %f %f\n", A[500], A[5000], A[50000]);
 
     #ifdef DYNAMIC
     free(A);

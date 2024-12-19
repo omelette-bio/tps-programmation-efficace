@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "mkl.h"
-#define N 2000
-#define M 2000
-#define P 2000
+#define N 6000
+#define M 6000
+#define P 6000
 
 #ifdef DYNAMIC
 double *A, *B, *C;

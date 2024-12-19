@@ -31,7 +31,7 @@ int main()
 
     vect_add();
     
-    fprintf(stderr, "%f\n", C[300]);
+    fprintf(stdout, "%f\n", C[300]);
 
     #ifdef DYNAMIC
     free(A);
