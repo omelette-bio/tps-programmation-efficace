@@ -62,16 +62,17 @@ int main()
     mat_mult();
 
     #ifdef DYNAMIC
+    fprintf(stdout, "%f %f %f\n", A[500], B[500], C[500]);
+    #else
+    fprintf(stdout, "%f %f %f\n", A[500][500], B[500][500], C[500][500]);
+    #endif
+    
+    #ifdef DYNAMIC
     free(A);
     free(B);
     free(C);
     #endif
 
-    #ifdef DYNAMIC
-    fprintf(stderr, "%f %f %f\n", A[500], B[500], C[500]);
-    #else
-    fprintf(stderr, "%f %f %f\n", A[500][500], B[500][500], C[500][500]);
-    #endif
     
     return 0;
 }
