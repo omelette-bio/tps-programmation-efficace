@@ -1,8 +1,9 @@
 #! /bin/bash
 
-orders=("ijk" "ikj" "jik" "jki" "kij" "kji")
+#orders=("ijk" "ikj" "jik" "jki" "kij" "kji")
+orders2=("ijk" "ijk_O2" "floop" "floop_O2")
 
-for order in "${orders[@]}";
+for order in "${orders2[@]}";
 do
     for _i in {1..4}; 
     do 

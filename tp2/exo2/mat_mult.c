@@ -1,15 +1,15 @@
 #include <stdio.h>
 
 #ifndef N
-#define N 1500
+#define N 2000
 #endif
 
 #ifndef M
-#define M 1500
+#define M 2000
 #endif
 
 #ifndef P
-#define P 1500
+#define P 2000
 #endif
 
 float A[N][P], B[P][M], C[N][M];
