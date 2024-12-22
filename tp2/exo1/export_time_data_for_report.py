@@ -2,8 +2,7 @@ sum = 0
 f = open("data.txt")
 j = 0
 k = 0
-opti = ["ijk", "ikj", "jik", "jki", "kij", "kji"]
-# opti = ["ijk" "ijk_O2" "floop" "floop_O2"]
+opti = ["base", "deroulage", "funroll"]
 res = dict()
 
 for i in f.readlines():
@@ -24,7 +23,7 @@ print()
 print("\\begin{table}[H]")
 print("\\centerline")
 print("\\begin{tabular}{ l|c|r }")
-print("Ordre des boucles & Moyenne temps globaux & Taux d'acceleration \\\\")
+print("Deroulage & Moyenne temps globaux & Taux d'acceleration \\\\")
 print("\\hline")
 
 print("\\textbf{",opti[0],"} & \\textbf{",res[opti[0]],"} & \\textbf{1} \\\\")

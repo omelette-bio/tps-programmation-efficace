@@ -1,9 +1,0 @@
-./mat_mult_funroll  4.38s user 0.03s system 99% cpu 4.423 total
-./mat_mult_funroll  4.41s user 0.02s system 99% cpu 4.446 total
-./mat_mult_funroll  4.27s user 0.02s system 99% cpu 4.303 total
-./mat_mult  4.40s user 0.03s system 99% cpu 4.441 total
-./mat_mult  4.68s user 0.02s system 99% cpu 4.720 total
-./mat_mult  4.67s user 0.03s system 99% cpu 4.711 total
-./mat_mult_deroulage  4.22s user 0.04s system 99% cpu 4.267 total
-./mat_mult_deroulage  4.37s user 0.03s system 99% cpu 4.411 total
-./mat_mult_deroulage  4.25s user 0.04s system 99% cpu 4.302 total

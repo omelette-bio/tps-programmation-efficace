@@ -1,13 +1,12 @@
 #! /bin/bash
 
-
-orders=("sans_deroulage" "question1" "question2")
+orders=("base" "deroulage" "funroll")
 
 for order in "${orders[@]}";
 do
     for _i in {1..4}; 
     do 
-        (/bin/time -f "%e" ./exemple_"$order") > /dev/null 2>> data.txt 
+        (/bin/time -f "%e" ./mat_mult_"$order") > /dev/null 2>> data.txt 
     done
 done
 

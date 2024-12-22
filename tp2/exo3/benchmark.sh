@@ -1,9 +1,9 @@
 #! /bin/bash
 
-#orders=("ijk" "ikj" "jik" "jki" "kij" "kji")
-orders2=("ijk" "ijk_O2" "floop" "floop_O2")
+orders=("ijk" "ikj" "jik" "jki" "kij" "kji")
+#orders=("ijk" "ijk_O2" "floop" "floop_O2")
 
-for order in "${orders2[@]}";
+for order in "${orders[@]}";
 do
     for _i in {1..4}; 
     do 
@@ -12,3 +12,5 @@ do
 done
 
 python3 export_time_data_for_report.py
+
+rm data.txt

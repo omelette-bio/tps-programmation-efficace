@@ -21,3 +21,5 @@ do
 done
 
 python3 export_time_data_for_report.py
+
+rm data.txt
