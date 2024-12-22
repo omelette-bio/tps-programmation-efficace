@@ -1,9 +1,9 @@
 #include <stdio.h>
 
 #ifdef BLOC_L1
-#define BLOC 128
+#define BLOC 64
 #elif BLOC_L2
-#define BLOC 660
+#define BLOC 295
 #else
 #define BLOC 836
 #endif

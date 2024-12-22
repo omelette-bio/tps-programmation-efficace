@@ -1,7 +1,8 @@
 #! /bin/bash
 
 
-orders=("sans_deroulage" "question1" "question2")
+#orders=("sans_deroulage" "question1" "question2")
+orders=("sans_deroulage_O2" "question1_O2" "question2_O2")
 
 for order in "${orders[@]}";
 do
