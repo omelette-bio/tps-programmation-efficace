@@ -1,0 +1,17 @@
+
+ Performance counter stats for './vec_add_O2_DYNAMIC':
+
+     1,885,939,617      instructions:u                                                        
+       325,803,765      branches:u                                                            
+        34,530,561      L1-dcache-load-misses:u                                               
+            13,796      L1-icache-load-misses:u                                               
+        60,501,578      l2_rqsts.miss:u                                                       
+                 0      mem-loads:u                                                           
+       390,013,242      mem-stores:u                                                          
+
+       0.904427995 seconds time elapsed
+
+       0.228602000 seconds user
+       0.673844000 seconds sys
+
+

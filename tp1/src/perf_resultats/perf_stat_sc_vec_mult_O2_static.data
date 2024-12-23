@@ -1,0 +1,17 @@
+
+ Performance counter stats for './sc_vec_mult_O2':
+
+     1,063,166,667      instructions:u                                                        
+       188,030,562      branches:u                                                            
+        31,394,944      L1-dcache-load-misses:u                                               
+            11,526      L1-icache-load-misses:u                                               
+        55,270,094      l2_rqsts.miss:u                                                       
+                 0      mem-loads:u                                                           
+       250,013,369      mem-stores:u                                                          
+
+       0.653133600 seconds time elapsed
+
+       0.237506000 seconds user
+       0.414225000 seconds sys
+
+

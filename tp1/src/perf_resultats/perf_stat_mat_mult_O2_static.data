@@ -1,0 +1,17 @@
+
+ Performance counter stats for './mat_mult_O2':
+
+    16,015,251,851      instructions:u                                                        
+     2,002,072,457      branches:u                                                            
+     2,499,849,860      L1-dcache-load-misses:u                                               
+            26,731      L1-icache-load-misses:u                                               
+       509,233,852      l2_rqsts.miss:u                                                       
+                 0      mem-loads:u                                                           
+         3,013,603      mem-stores:u                                                          
+
+       4.467023936 seconds time elapsed
+
+       4.433908000 seconds user
+       0.021937000 seconds sys
+
+

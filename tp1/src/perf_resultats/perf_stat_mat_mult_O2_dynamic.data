@@ -1,0 +1,17 @@
+
+ Performance counter stats for './mat_mult_O2_DYNAMIC':
+
+    64,041,263,817      instructions:u                                                        
+     8,005,082,037      branches:u                                                            
+     9,855,829,497      L1-dcache-load-misses:u                                               
+            28,355      L1-icache-load-misses:u                                               
+       552,999,445      l2_rqsts.miss:u                                                       
+                 0      mem-loads:u                                                           
+     8,002,013,971      mem-stores:u                                                          
+
+      13.379548114 seconds time elapsed
+
+      13.319537000 seconds user
+       0.028801000 seconds sys
+
+
