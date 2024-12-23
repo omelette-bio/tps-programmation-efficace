@@ -1,0 +1,15 @@
+
+ Performance counter stats for './vec_add_O2':
+
+       715,936,708      instructions:u                                                        
+       130,803,218      branches:u                                                            
+        33,744,361      L1-dcache-load-misses:u                                               
+            15,966      L1-icache-load-misses:u                                               
+        57,774,512      l2_rqsts.miss:u                                                       
+
+       0.871903796 seconds time elapsed
+
+       0.188792000 seconds user
+       0.681166000 seconds sys
+
+

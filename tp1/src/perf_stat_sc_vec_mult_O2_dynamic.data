@@ -1,0 +1,15 @@
+
+ Performance counter stats for './sc_vec_mult_O2_DYNAMIC':
+
+     3,313,168,754      instructions:u                                                        
+       563,030,941      branches:u                                                            
+        31,379,429      L1-dcache-load-misses:u                                               
+            10,994      L1-icache-load-misses:u                                               
+        55,278,017      l2_rqsts.miss:u                                                       
+
+       0.709904984 seconds time elapsed
+
+       0.279385000 seconds user
+       0.428957000 seconds sys
+
+
