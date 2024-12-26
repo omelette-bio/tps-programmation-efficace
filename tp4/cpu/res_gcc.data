@@ -1,0 +1,130 @@
+*****************************
+/ECOFLOC_CPU_PID_65891
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 3.74 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_65891
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.19 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_65891
+*****************************
+Average Power : 0.15 Watts
+Total Energy : 4.47 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_65891
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.11 Joules
+*****************************
+resultats pour gcc O0 ci-dessus
+
+*****************************
+/ECOFLOC_CPU_PID_74718
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 3.73 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_74718
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.14 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_74718
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.27 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_74718
+*****************************
+Average Power : 0.13 Watts
+Total Energy : 3.86 Joules
+*****************************
+resultats pour gcc O1 ci-dessus
+
+*****************************
+/ECOFLOC_CPU_PID_83358
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 3.84 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_83358
+*****************************
+Average Power : 0.13 Watts
+Total Energy : 3.86 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_83358
+*****************************
+Average Power : 0.15 Watts
+Total Energy : 4.34 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_83358
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.28 Joules
+*****************************
+resultats pour gcc O2 ci-dessus
+
+*****************************
+/ECOFLOC_CPU_PID_92091
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 3.86 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_92091
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.33 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_92091
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.17 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_92091
+*****************************
+Average Power : 0.15 Watts
+Total Energy : 4.46 Joules
+*****************************
+resultats pour gcc O3 ci-dessus
+
+*****************************
+/ECOFLOC_CPU_PID_100794
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 3.96 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_100794
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.25 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_100794
+*****************************
+Average Power : 0.15 Watts
+Total Energy : 4.24 Joules
+*****************************
+*****************************
+/ECOFLOC_CPU_PID_100794
+*****************************
+Average Power : 0.14 Watts
+Total Energy : 4.10 Joules
+*****************************
+resultats pour gcc Os ci-dessus
+
