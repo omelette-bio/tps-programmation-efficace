@@ -5,6 +5,7 @@ orders=("bloc_base" "bloc_l1_ijk" "bloc_l2_ijk" "bloc_l3_ijk" "bloc_floop_block"
 
 for order in "${orders[@]}";
 do
+	echo "$order" >> bench.txt
     for _i in {1..4}; 
     do 
         (/bin/time -f "%e" ./mat_mult_"$order") > /dev/null 2>> bench.txt 
