@@ -1,0 +1,552 @@
+\documentclass{rapport}
+\usepackage[utf8]{inputenc}
+
+\usepackage{pifont} % Pour les symboles appelés par la macro \ding
+\usepackage{url} % Comme son nom l'indique, pour les url...
+
+\usetikzlibrary{positioning} % Bibliothèque tikz pour positionner des nœuds relativement à d'autrès
+
+\usepackage[colorlinks, citecolor=red!60!green, linkcolor=blue!60!green, urlcolor=magenta]{hyperref} % Pour que les liens soient cliquables. Les options permettent de mettre les liens en couleur.
+
+\usepackage{algorithm}
+\usepackage{algo}
+\usepackage{colorationSyntaxique}
+\usepackage{listings}
+
+
+% Pour un rapport en français 
+\usepackage[francais]{babel} % Commenter pour un rapport en anglais
+\renewcommand\bibsection{\section*{Bibliographie}} % Commenter pour un rapport en anglais
+
+% \englishTitlePage % Décommenter pour une page de titre en anglais
+
+
+\pagestyle{fancy}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection.\ #1}{}}
+\fancyfoot{}
+
+\fancyhead[LE]{\textsl{\leftmark}}
+\fancyhead[RE, LO]{\textbf{\thepage}}
+\fancyhead[RO]{\textsl{\rightmark}}
+
+\def\Latex{\LaTeX\xspace}
+\def\etc{\textit{etc.}\xspace}
+
+\lstset{                  % Specify language
+    basicstyle=\ttfamily\small,     % Code font and size
+    keywordstyle=\color{blue},      % Color for keywords
+    commentstyle=\color{gray},      % Color for comments
+    stringstyle=\color{red},        % Color for strings
+    numbers=left,                   % Add line numbers
+    numberstyle=\tiny\color{gray},  % Style for line numbers
+    % frame=single,                   % Add a border around code
+    breaklines=true,                % Line wrapping
+    % backgroundcolor=\color{gray!10} % Light gray background
+}
+
+
+\title{Évaluation des performances d’un programme et optimisations de
+code par compilation}
+\author{Francois Flandin}
+\supervisor{Pr Sid Touati}
+\date{Premier semestre de l'annee 2024-2025}
+
+% \universityname{Université Côte d'Azur} % Nom de l'université.
+\type{TP} % Type de document
+% \formation{Master Informatique} % Nom de la formation
+
+% Retrouver les autrès options possibles dans le document rapport.pdf
+
+\begin{document}
+
+\maketitle
+
+\clearpage
+\tableofcontents
+
+\clearpage
+
+\section{Introduction}
+Dans le cadre de ce travail pratique, nous avons exploré les concepts liés à l’évaluation des performances des programmes informatiques et à leur optimisation par la compilation. \newline
+Ces compétences sont essentielles pour développer des applications efficaces, capables d'exploiter au mieux les ressources matérielles disponibles. \newline
+Ce TP se concentre sur plusieurs aspects clés, notamment la réalisation de benchmarks, le profilage des programmes, et l'utilisation des options d'optimisation des compilateurs.\newline
+L'objectif principal de ce rapport est de détailler les expériences menées, d'interpréter les résultats obtenus, et d'évaluer les bénéfices des diverses optimisations. 
+
+
+
+\section*{Environnement Expérimental}
+\subsection*{Micro-Architecture}
+Dans cette partie sera detaillée la micro-architecture de la machine de tests.
+\newline\newline
+\textbf{Nom de modèle :} 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz
+\newline
+\textbf{Taille des adresses :} 39 bits physical, 48 bits virtual
+\newline
+\textbf{Coeurs physiques :} 4
+\newline
+\textbf{Taille de ligne de cache :} 64 octets
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|c|c|c|c|}
+        \hline
+        \multicolumn{5}{|c|}{Graphical Topology} \\
+        \hline
+        Coeurs & \enspace0\enspace\enspace4 &\enspace1\enspace\enspace5 &\enspace2\enspace\enspace6 &\enspace3\enspace\enspace7 \\
+        \hline
+        Cache L1 & \enspace48 kB &\enspace48 kB &\enspace48 kB &\enspace48 kB \\
+        \hline
+        Cache L2 & 1MB & 1MB & 1MB & 1MB \\
+        \hline
+        Cache L3 & \multicolumn{4}{|c|}{8 MB} \\
+        \hline
+    \end{tabular}
+    \caption{Topologie de la machine de tests}
+    \label{tab:graph_characteristics}
+\end{table}
+
+
+\subsection*{Environnement Logiciel}
+Dans cette partie sera détaillée la partie logiciel de la machine de test, les fichiers scripts pour changer entre machine allégée et machine classique sont fournis dans l'archive.
+\newline\newline
+\textbf{Distribution :} Fedora v40 WorkStation
+\newline
+\textbf{Compilateur utilisé :} \texttt{gcc} version 14.2.1 20240912 avec option \texttt{-O0}
+\newline
+\textbf{Outil de mesure des temps d'exécution :} commande \texttt{time}.
+
+\section*{Configuration expérimentale}
+\subsection*{Processus en activité}
+Les benchmarks n'ont pas été efféctués sur un environnement allégé, pour la curiosité on laissera un dossier \texttt{data\_allegee} avec les résultats des benchmarks réalisés sur une configuration minimale.\newline
+De part la nature non-allégée de la machine de tests, il ya beaucoup de processus en activité, dont des éditeurs de texte, le terminal, un navigateur et autres applications de messagerie.
+
+\subsection*{Méthodologie de récolte des données expérimentales}
+Pour mesurer le temps d'exécution des différents benchmarks \texttt{matrix\_multiply}, \texttt{vec\_add}, \texttt{sc\_vec\_mult}, on va utiliser plusieurs la commande \texttt{time}, executee un total de 4 fois.
+Le resultat de ces commandes est fourni dans l'archive.
+Les résultats des benchmarks sont ensuite envoyés dans fichier \texttt{data.txt}, que l'on pourra interpréter avec le programme python \texttt{export\_time\_data.py}.\newline
+Le programme se charge de calculer la moyenne des temps globaux de chaque benchmark, ainsi que de calculer le taux d'accélération de chaque programme par rapport au programme sans niveau d'optimisation spécifié.
+
+
+
+
+\section{Mesures des performances et profilage d’un programme}
+
+\subsection{Temps d'exécution des programmes}
+Dans cette partie, nous allons voir des benchmarks sur les trois programmes \textit{matrix multiply} \textit{addition de vecteurs} et \textit{multiplication de vecteur par un scalaire}.
+
+\subsubsection{Multiplication de matrices}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|c|c|c|c|c}
+Version & Temps d’exécution & Temps d’exécution & Proportion & Temps d’exécution & Proportion \\
+& global moyen & utilisateur moyen & utilisateur & système moyen & système \\
+\hline
+Statique & 23.55s & 23.48s & 99.7\% & 0,0175s & 0.00074\% \\
+Dynamique & 27.65s & 27.65s & 99.3\% & 0,0275s & 0.00099\% \\
+\end{tabular}
+\end{table}
+
+\textbf{Analyse :} On constate donc que pour la multiplication de matrices, la version statique est plus performante que la version dynamique, d'une part par la moyenne des temps d'exécution, en moyenne la version statique gagne 4.17 secondes.\newline
+D'autre part, la version statique a une plus grande proportion de son temps de calcul dans le code utilisateur, même si la différence est petite (0.4\%) et que cela pourrait être dû à un changement de contexte, on remarque aussi que le temps d'exécution système est plus grand pour la version dynamique.
+
+\subsubsection{Multiplication d'un vecteur par un scalaire}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|c|c|c|c|c}
+Version & Temps d’exécution & Temps d’exécution & Proportion & Temps d’exécution & Proportion \\
+& global moyen & utilisateur moyen & utilisateur & système moyen & système \\
+\hline
+Statique & 2.5185s & 2.06s & 81\% & 0.4575s & 18\% \\
+Dynamique & 2.354s & 1.8875s & 80\% & 0.4625s & 19\% \\
+\end{tabular}
+\end{table}
+
+\textbf{Analyse :} On constate donc que pour la multiplication de vecteur par un scalaire, la version dynamique est cette fois plus performante, mais uniquement sur le plan du temps d'exécution,
+on constate une baisse de presque 0.2 secondes par rapport a l'exécution statique, cependant, du côté de la proportion temps utilisateur/temps système, la version statique l'emporte, avec un gain de 1\% sur le temps utilisateur.
+
+\subsubsection{Addition de deux vecteurs}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|c|c|c|c|c}
+Version & Temps d’exécution & Temps d’exécution & Proportion & Temps d’exécution & Proportion \\
+& global moyen & utilisateur moyen & utilisateur & système moyen & système \\
+\hline
+Statique & 1.72875s & 1.045s & 60\% & 0.6825s & 39\% \\
+Dynamique & 1.8175s & 1.135s & 62\% & 0.6825s & 37\% \\
+\end{tabular}
+\end{table}
+
+\textbf{Analyse :} On constate donc que pour l'addition de vecteurs, la version statique est la plus performante, mais uniquement sur le plan de la vitesse d'exécution,
+on constate une baisse de presque 0.1 seconde, à ce niveau-là c'est peut-être une erreur du benchmark, mais ce n'est pas non plus un gain de performance important.
+
+\subsection{Comment calculer l'IPC, le CPI et le GFLOPS}
+
+\subsubsection{Calculer l'IPC}
+La formule pour calculer l'IPC est la suivante :
+\[
+IPC = \frac{nombre\_d'instructions}{nombre\_de\_cycles}
+\]
+
+
+\subsubsection{Calculer le CPI}
+La formule pour calculer le CPI est la suivante :
+\[
+CPI = \frac{nombre\_de\_cycles}{nombre\_d'instructions}
+\]
+
+\subsubsection{Calculer le GFLOPS}
+La formule pour calculer le GFLOPS est la suivante:
+\[
+GFLOPS = \frac{Nombre\_de\_calculs\_flottants}{Temps\_d'execution}
+\]
+
+
+
+\section{Optimisations de code avec le compilateur gcc}
+\subsection{Comparaison des niveaux d'optimisation}
+Dans cette partie, nous allons voir différents benchmarks sur les différents programmes, a plusieurs niveaux d'optimisation avec gcc.
+
+\subsubsection{Matrix Multiply}
+\subsubsection*{Version statique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{23.55} & \textbf{1} \\ 
+        O1 & 12.58 & 1.87 \\  
+        O2 & 4.4775 & 5.25 \\  
+        O3 & 4.325 & 5.44 \\  
+        Os & 12.87 & 1.82
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de la multiplication de matrices, le plus optimisé serait \textit{-O3} avec un taux d'accélération de 5.44.
+\newline Cependant on remarque aussi \textit{-O2} qui possède quand a lui un taux d'accélération de 5.25, ce qui reste relativement proche.
+
+\subsubsection*{Version dynamique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau d'optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{27.83} & \textbf{1} \\ 
+        O1 & 20.24 & 1.375 \\  
+        O2 & 13.29 & 2.09 \\  
+        O3 & 13.4325 & 2.07 \\  
+        Os & 20.825 & 1.33
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version dynamique de la multiplication de matrices, le plus optimisé serait \textit{-O2} avec un taux d'accélération de 2.09.
+\newline Cependant on remarque aussi \textit{-O3} qui possède quand a lui un taux d'accélération de 2.07, qui est extrêmement proche, on ne peut donc pas dire lequel est le plus efficace, car cette très légère différence pourrait venir soit de la commande time, soit du contexte d'exécution.
+
+
+
+\subsubsection{Addition de vecteurs}
+\textbf{Version statique}
+\begin{center}
+\begin{tabular}{ l|c|r }
+Niveau d'optimisation & Moyenne temps globaux & Taux d'accélération \\
+\hline
+Aucun & 1.72875 & 1 \\ 
+O1 & 1.05625 & 1.63 \\  
+O2 & 0.897 & 1.92 \\  
+O3 & 0.894 & 1.93 \\  
+Os & 1.05125 & 1.64
+\end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de l'addition de vecteurs, le plus optimisé serait \textit{-O3} avec un taux d'accélération de 1.93.
+\newline Cependant on remarque aussi \textit{-O2} qui possède quand a lui un taux d'accélération de 1.92, qui est extrêmement proche, on ne peut donc pas dire lequel est le plus efficace, car cette très légère différence pourrait venir soit de la commande time, soit du contexte d'exécution.
+\newline\newline
+\textbf{Version dynamique}
+\begin{center}
+\begin{tabular}{ l|c|r }
+Niveau optimisation & moyenne temps global & taux d'accélération \\
+\hline
+Aucun & 1.8175 & 1 \\ 
+O1 & 1.11425 & 1.63 \\  
+O2 & 0.93525 & 1.94 \\  
+O3 & 0.8975 & 2.02 \\  
+Os & 1.031 & 1.76
+\end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version dynamique de l'addition de vecteurs, le plus optimisé serait \textit{-O3} avec un taux d'accélération de 2.02.
+\newline Cependant on remarque aussi \textit{-O2} qui possède quand a lui un taux d'accélération de 1.94, ce qui reste relativement proche.
+
+
+
+\subsubsection{Multiplication de vecteur par un scalaire}
+\textbf{Version statique}
+\begin{center}
+\begin{tabular}{ l|c|r }
+Niveau d'optimisation & Moyenne temps globaux & Taux d'accélération \\
+\hline
+Aucun & 2.5185 & 1 \\ 
+O1 & 0.82225 & 3.06 \\  
+O2 & 0.666 & 3.78 \\  
+O3 & 0.675 & 3.73 \\  
+Os & 0.827 & 3.04
+\end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de la multiplication de vecteur par un scalaire, le plus optimisé serait \textit{-O2} avec un taux d'accélération de 3.78.
+\newline Cependant on remarque aussi \textit{-O3} qui possède quand a lui un taux d'accélération de 3.73, ce qui reste relativement proche.
+\newline\newline
+\textbf{Version dynamique}
+\begin{center}
+\begin{tabular}{ l|c|r }
+Niveau optimisation & Moyenne temps global & Taux d'accélération \\
+\hline
+Aucun & 2.354 & 1 \\ 
+O1 & 0.9365 & 2.51 \\  
+O2 & 0.7335 & 3.20 \\  
+O3 & 0.67775 & 3.47 \\  
+Os & 0.8365 & 2.81
+\end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version dynamique de la multiplication de vecteur par un scalaire, le plus optimisé serait \textit{-O3} avec un taux d'accélération de 3.47.
+\newline Cependant on remarque aussi \textit{-O2} qui possède quand a lui un taux d'accélération de 3.20, ce qui reste relativement proche.
+
+
+
+
+
+
+\subsection{-fprofile-generate}
+Voici ce qu'en dit le manuel de gcc:
+\begin{lstlisting}
+Enable options usually used for instrumenting application to produce profile useful for later recompilation with profile feedback based optimization. You must use -fprofile-generate both when compiling and when linking your program.
+\end{lstlisting}
+\subsection{-fprofile-use}
+Voici ce qu'en dit le manuel de gcc:
+\begin{lstlisting}
+Enable  profile  feedback-directed  optimizations[...] Before you  can  use  this  option,  you  must  first  generate  profiling information.
+\end{lstlisting}
+Voici un exemple, le temps d'exécution de matrix multiply en statique avec profile use:
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{23.55} & \textbf{1} \\ 
+        -fprofile-use & 23,70 & 0,99
+    \end{tabular}
+    \caption{Comparaison des temps d'execution entre \texttt{gcc} et \texttt{gcc -fprofile-use}.}
+\end{table}
+On ne note donc pas de gain de performances, on perd meme un peu de temps.
+
+
+\clearpage
+
+
+\section{Optimisations de code avec le compilateur d’Intel icc ou icx}
+\subsection{Comparaison des niveaux d'optimisation}
+\subsubsection{Multiplication de matrices}
+\textbf{Version statique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau d'optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{ 22.06 } & \textbf{1} \\
+        O1 & 12.195 & 1.80 \\
+        O2 & 13.3025 & 1.65 \\
+        O3 & 15.465 & 1.42 \\
+        Os & 11.59 & 1.90 \\
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de multiplication de matrices, le plus optimisé serait \textit{-Os} avec un taux d'accélération de 1.90.
+\newline Cependant on remarque aussi \textit{-O1} qui possède quand a lui un taux d'accélération de 1.80, ce qui est relativement proche.
+
+\textbf{Version dynamique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Taille de bloc & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{ 26.9825 } & \textbf{1} \\
+        O1 & 12.48 & 2.16 \\
+        O2 & 14.385 & 1.87 \\
+        O3 & 13.645 & 1.97 \\
+        Os & 12.7675 & 2.11 \\
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de multiplication de matrices, le plus optimisé serait \textit{-O1} avec un taux d'accélération de 1.16.
+\newline Cependant on remarque aussi \textit{-Os} qui possède quand a lui un taux d'accélération de 2.11, ce qui est très proche, on peut donc aussi s'en servir si on veut avoir un code plus court.
+
+
+\subsubsection{Addition de vecteurs}
+\textbf{Version statique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{1.45} & \textbf{1} \\
+        O1 & 1.1 & 1.31 \\
+        O2 & 0.96 & 1.51 \\
+        O3 & 1.0175 & 1.42 \\
+        Os & 1.11 & 1.30 \\
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de l'addition de vecteurs, le plus optimisé serait \textit{-O2} avec un taux d'accélération de 1.51.
+\newline Cependant on remarque aussi \textit{-O3} qui possède quand a lui un taux d'accélération de 1.42, ce qui est relativement proche.
+
+\textbf{Version dynamique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{1.655} & \textbf{1} \\
+        O1 & 1.162 & 1.42 \\
+        O2 & 1.0175 & 1.62 \\
+        O3 & 1.015 & 1.63 \\
+        Os & 1.1975 & 1.38
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de l'addition de vecteurs, le plus optimisé serait \textit{-O3} avec un taux d'accélération de 1.63.
+\newline Cependant on remarque aussi \textit{-O2} qui possède quand a lui un taux d'accélération de 1.62, ce qui est donc extrêmement proche, on ne peut donc pas faire de choix sur lequel est le plus optimisé, car leur différence de 0.1 peut etre due a des facteurs exterieurs au code.
+
+
+\subsubsection{Multiplication de vecteur par un scalaire}
+\textbf{Version statique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{1.5875} & \textbf{1} \\
+        O1 & 0.905 & 1.75 \\
+        O2 & 0.5425 & 2.92 \\
+        O3 & 0.5375 & 2.95 \\
+        Os & 0.66 & 2.40
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de la multiplication de vecteur par un scalaire, le plus optimisé serait \textit{-O3} avec un taux d'accélération de 2.95.
+\newline Cependant on remarque aussi \textit{-O2} qui possède quand a lui un taux d'accélération de 2.92, ce qui est relativement proche.
+
+
+
+\textbf{Version dynamique}
+\begin{center}
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{Aucun} & \textbf{1.702} & \textbf{1} \\
+        O1 & 0.905 & 1.88 \\
+        O2 & 0.54 & 3.15 \\
+        O3 & 0.5425 & 3.13 \\
+        Os & 0.665 & 2.56
+    \end{tabular}
+\end{center}
+Après analyse des résultats, on peut en conclure que pour la version statique de la multiplication de vecteur par un scalaire, le plus optimisé serait \textit{-O2} avec un taux d'accélération de 3.15.
+\newline Cependant on remarque aussi \textit{-O3} qui possède quand a lui un taux d'accélération de 3.13, ce qui est relativement proche.
+
+
+
+\section{Librairie MKL d'intel}
+Pour compiler le programme, icx ne détectait pas les librairies MKL, j'ai donc dû entrer cette commande:
+\begin{lstlisting}
+icx -I${MKLROOT}/include mat_mult_mkl.c \
+    -L${MKLROOT}/lib/intel64 \
+    -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lm -ldl \
+    -o mat_mult_mkl
+\end{lstlisting}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{ l|c|r }
+        Niveau optimisation & Moyenne temps globaux & Taux d'accélération \\
+        \hline
+        \textbf{O3} & \textbf{15.465} & \textbf{1} \\
+        MKL & 0.26 & 59.48 \\
+    \end{tabular}
+\end{table}
+
+
+\section{Compteurs matériels de performances (sur Linux/x86)}
+
+\subsection{Resultats Matrix Multiply}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|c|c|}
+    \hline
+    Version & Nombre d'instructions & Nombre d'instructions memoires \\
+    \hline
+    statique & 16,015,251,894 & 3,013,603 \\
+    dynamique & 64,041,264,521 & 8,002,013,971 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    Version & Defauts de cache L1 & Defauts de cache L2 & Branchements \\
+    \hline
+    statique & 2 499 899 792 & 510 391 935 & 2 002 072 500 \\
+    dynamique & 9 942 510 853 & 545 097 850 & 8 005 082 741 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Addition de vecteurs}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|c|c|}
+    \hline
+    Version & Nombre d'instructions & Nombre d'instructions memoires \\
+    \hline
+    statique & 715,936,708 & 195,012,882 \\
+    dynamique & 1,885,939,617 & 390,013,242 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    Version & Defauts de cache L1 & Defauts de cache L2 & Branchements \\
+    \hline
+    statique & 33 760 327 & 57 774 512 & 130 803 218 \\
+    dynamique & 34 977 315 & 60 405 651 & 325 803 765 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Multiplication d'un vecteur par un scalaire}
+
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|c|c|}
+    \hline
+    Version & Nombre d'instructions & Nombre d'instructions memoires \\
+    \hline
+    statique & 1,063,166,651 & 250,013,369 \\
+    dynamique & 3,313,168,754 & 625,013,613 \\
+    \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+    \begin{tabular}{|l|c|c|c|}
+    \hline
+    Version & Defauts de cache L1 & Defauts de cache L2 & Branchements \\
+    \hline
+    statique & 31 466 405 & 55 315 321 & 188 030 546 \\
+    dynamique & 31 390 423 & 55 278 017 & 563 030 941 \\ 
+    \hline
+    \end{tabular}
+\end{table}
+
+% mat mult      d : 8 005 082 741   | s : 2 002 072 500
+% vec add       d : 325 803 765     | s : 130 803 218
+% sc vec mult   d : 563 030 941     | s : 188 030 546
+
+\section{Conclusion}
+Au cours de ces expériences, nous avons exploré différents outils de compilation et les nombreuses options qu’ils proposent pour optimiser nos programmes en C. Cela nous a permis de comparer les performances et les optimisations offertes par \texttt{gcc} et \texttt{icx}, avec un avantage notable pour \texttt{gcc} dans ce domaine. Par ailleurs, nous avons analysé les différences entre la programmation statique et dynamique, mettant en évidence que la programmation dynamique entraîne généralement des performances inférieures en raison de sa nature plus flexible mais plus coûteuse en ressources. \newline
+Enfin, l’étude des compteurs matériels de performances a enrichi notre compréhension du fonctionnement interne du processeur. Ces outils fournissent des données précises au fil de l’exécution d’un programme, telles que le nombre d’instructions exécutées, les accès mémoire, ou encore les défauts de cache. Ces informations sont essentielles pour identifier les problèmes et affiner davantage l’optimisation des programmes.
+
+\end{document}

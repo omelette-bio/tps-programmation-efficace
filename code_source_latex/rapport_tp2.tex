@@ -1,0 +1,328 @@
+\documentclass{rapport}
+\usepackage[utf8]{inputenc}
+
+\usepackage{pifont} % Pour les symboles appelés par la macro \ding
+\usepackage{url} % Comme son nom l'indique, pour les url...
+
+\usetikzlibrary{positioning} % Bibliothèque tikz pour positionner des nœuds relativement à d'autres
+
+\usepackage[colorlinks, citecolor=red!60!green, linkcolor=blue!60!green, urlcolor=magenta]{hyperref} % Pour que les liens soient cliquables. Les options permettent de mettre les liens en couleur.
+
+\usepackage{algorithm}
+\usepackage{algo}
+\usepackage{colorationSyntaxique}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+
+
+
+% Pour un rapport en français 
+\usepackage[francais]{babel} % Commenter pour un rapport en anglais
+\renewcommand\bibsection{\section*{Bibliographie}} % Commenter pour un rapport en anglais
+
+% \englishTitlePage % Décommenter pour une page de titre en anglais
+
+
+\pagestyle{fancy}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection.\ #1}{}}
+\fancyfoot{}
+
+\fancyhead[LE]{\textsl{\leftmark}}
+\fancyhead[RE, LO]{\textbf{\thepage}}
+\fancyhead[RO]{\textsl{\rightmark}}
+
+\def\Latex{\LaTeX\xspace}
+\def\etc{\textit{etc.}\xspace}
+
+\lstset{                  % Specify language
+    basicstyle=\ttfamily\small,     % Code font and size
+    keywordstyle=\color{blue},      % Color for keywords
+    commentstyle=\color{gray},      % Color for comments
+    stringstyle=\color{red},        % Color for strings
+    numbers=left,                   % Add line numbers
+    numberstyle=\tiny\color{gray},  % Style for line numbers
+    % frame=single,                   % Add a border around code
+    breaklines=true,                % Line wrapping
+    % backgroundcolor=\color{gray!10} % Light gray background
+}
+
+
+
+\title{Transformations de boucles}
+\author{Francois Flandin}
+\supervisor{Pr Sid Touati}
+\date{Premier semestre de l'annee 2024-2025}
+
+% \universityname{Université Côte d'Azur} % Nom de l'université.
+\type{TP} % Type de document
+% \formation{Master Informatique} % Nom de la formation
+
+% Retrouver les autres options possibles dans le document rapport.pdf
+
+\begin{document}
+
+\maketitle
+
+\clearpage
+\tableofcontents
+
+\clearpage
+\section{Introduction}
+Ce rapport porte sur les transformations de boucles appliquées dans le cadre d'optimisations de code, illustrées par l'exemple de la multiplication de matrices. \newline
+L'objectif de ce TP est d'explorer et d'analyser différentes techniques d'optimisation, notamment le déroulage de boucles, la fusion de boucles, la permutation des ordres d'exécution, ainsi que le tuilage ou blocage des boucles.\newline 
+Ces transformations sont mises en œuvre dans le contexte de performances sur processeurs modernes, où l'exploitation efficace des caches et des pipelines est essentielle.\newline
+Les performances ont été mesurées à chaque étape pour évaluer l'impact des techniques proposées.\newline
+Ce rapport détaille les approches adoptées, les résultats obtenus, ainsi que les analyses et conclusions tirées de ces expérimentations.
+
+\section*{Environnement Expérimental}
+    \subsection*{Micro-Architecture}
+    Dans cette partie sera detaillée la micro-architecture de la machine de tests.
+    \newline\newline
+    \textbf{Nom de modèle :} 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz
+    \newline
+    \textbf{Taille des adresses :} 39 bits physical, 48 bits virtual
+    \newline
+    \textbf{Coeurs physiques :} 4
+    \newline
+    \textbf{Taille de ligne de cache :} 64 octets
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{|l|c|c|c|c|}
+            \hline
+            \multicolumn{5}{|c|}{Graphical Topology} \\
+            \hline
+            Coeurs & \enspace0\enspace\enspace4 &\enspace1\enspace\enspace5 &\enspace2\enspace\enspace6 &\enspace3\enspace\enspace7 \\
+            \hline
+            Cache L1 & \enspace48 kB &\enspace48 kB &\enspace48 kB &\enspace48 kB \\
+            \hline
+            Cache L2 & 1MB & 1MB & 1MB & 1MB \\
+            \hline
+            Cache L3 & \multicolumn{4}{|c|}{8 MB} \\
+            \hline
+        \end{tabular}
+        \caption{Topologie de la machine de tests}
+        \label{tab:graph_characteristics}
+    \end{table}
+    
+    
+    \subsection*{Environnement Logiciel}
+    Dans cette partie sera détaillée la partie logiciel de la machine de test, les fichiers scripts pour changer entre machine allégée et machine classique sont fournis dans l'archive.
+    \newline\newline
+    \textbf{Distribution :} Fedora Linux v40 WorkStation
+    \newline
+    \textbf{Compilateur utilisé :} \texttt{gcc} version 14.2.1 20240912 avec option \texttt{-O2}
+    \newline
+    \textbf{Outil de mesure des temps d'exécution :} Commande \texttt{/bin/time}.
+
+    \section*{Configuration expérimentale}
+    \subsection*{Processus en activité}
+    Les benchmarks n'ont pas été efféctués sur un environnement allégé, pour la curiosité on laissera des fichiers \texttt{data\_allegee}, avec les résultats des benchmarks réalisés sur une configuration minimale pour chaque exercice.\newline
+    De part la nature non-allégée de la machine de tests, il ya beaucoup de processus en activité, dont des éditeurs de texte, le terminal, un navigateur et autres applications de messagerie.
+    
+    \subsection*{Méthodologie de récolte des données expérimentales}
+    
+    Plusieurs scripts ont été réalisés afin de compiler le programme source sous différentes versions pour les besoins du TP, mais aussi afin de réaliser les différents benchmarks.
+    \newline Pour mesurer le temps d'exécution, on utilisera la commande \texttt{/bin/time} sur 4 exécutions consécutives pour en faire la moyenne.
+    \newline Ces moyennes seront ensuite envoyées a un programme python pour calculer les moyennes de temps d'exécution et leur taux d'accélération par rapport au cas de base, puis en faire un tableau qui puisse être exporté dans un rapport en latex.
+
+
+\section{Déroulage de boucle}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Déroulage & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{sans déroulage} & \textbf{4.624} & \textbf{1} \\
+    déroulage source & 4.326 & 1.07 \\
+    funroll-loops & 4.390 & 1.05
+  \end{tabular}
+  \caption{Évolution du temps moyen d'exécution en fonction de la méthode de déroulage de boucles.}
+\end{table}
+Les résultats montrent que le déroulage offre bel et bien un gain de performances, jusqu’à 7\% pour le déroulage source, de plus, on note que l'option \texttt{funroll-loops} offre moins de performances que le déroulage source, mais possède l'avantage que le développeur n'a pas à modifier de lui-même son code.
+
+\section{Fusion des boucles}
+
+\subsection{Analyse résultats}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Déroulage & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{sans déroulage} & \textbf{ 4.5275 } & \textbf{1} \\
+    déroulage de i & 4.5575 & 0.99 \\
+    déroulage de i et fusion de j & 12.985 & 0.34 \\
+  \end{tabular}
+  \caption{Évolution du temps moyen d'exécution en fonction des déroulages et des fusions des boucles i et j.}
+\end{table}
+
+Ces résultats nous montrent que le déroulage ou la fusion ne proposent pas de gains de performances sur la machine de test, cependant, la différence est tellement faible, entre le déroulage de i et sans déroulage, que cela peut être dû a un problème venant de la machine de test.
+
+\section{Permutations de boucles}
+\subsection{Ordre optimal des boucles}
+Pour le programme mat\_mult.c, l'ordre optimal des boucles (i,j,k) serait (i,k,j).\newline
+Cet ordre permet d'optimiser l'accès a la matrice B, car A[i][k] est plus souvent utilisé donc il reste le plus longtemps dans le cache, 
+cependant pour B, parcourir les lignes plutôt que les colonnes entraîne des sauts mémoires, augmentant ainsi le risque de défauts de cache.
+
+\subsection{Benchmark des ordres de boucles}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+  Ordre des boucles & Moyenne temps globaux & Taux d'accélération \\
+  \hline
+  \textbf{(i,j,k)} & \textbf{ 4.4875 } & \textbf{1} \\
+  (i,k,j) & 4.3325 & 1.03 \\
+  (j,i,k) & 4.4925 & 0.99 \\
+  (j,k,i) & 4.445 & 1.01 \\
+  (k,i,j) & 4.46 & 1.00 \\
+  (k,j,i) & 4.47 & 1.00 \\
+  \end{tabular}
+  \caption{Comparaison des différents ordres de boucles sur la moyenne des temps d'exécution.}
+\end{table}
+
+De ce que l'on peut voir sur ce tableau, l'ordre le plus optimisé est l'ordre (i,k,j) avec un taux d'accélération de 1.03, donc la théorie est valide,
+de plus, on peut noter que l'ordre le moins performant est (j,i,k).\newline
+Cependant, la différence de temps entre les ordres est si fine que cela pourrait être dû a une erreur de mesure ou un autre facteur venant de la machine de test.
+
+\section{Tuilage ou blocage de boucles}
+\subsection{Calcul de B, la taille du bloc}
+La formule pour calculer B est la suivante :
+\[
+  3 \times B^{2} \times sizeof(float) \leq C
+\]
+\newline
+\texttt{C} dans l'équation représente la taille du cache, en octets, il faut déterminer la taille du cache dans lequel on veut effectuer cette opération.\newline\newline
+Cache L1 de la machine test : 48 KiB = $48 * 1024 = 49152$ octets\newline
+Cache L2 de la machine test : 1 MiB = $1 * 1048576 = 1048576$ octets\newline
+Cache L3 de la machine test : 8 MiB = $8 * 1048576 = 8388608$ octets\newline
+Il reste donc a savoir comment trouver B, la taille du bloc, la formule est :
+
+\[
+  [ 3 \times B^{2} \times sizeof(float) \leq C ] \Leftrightarrow [ 3 \times B^{2} \times 4 \leq C ] \Leftrightarrow [ B^{2} \times 12 \leq C ] 
+\]
+\[
+  B^{2} \leq \frac{C}{12}
+\]
+
+Il faut donc l'appliquer pour toutes les tailles de cache.
+
+\subsubsection{Taille de B pour le cache L1}
+\[
+  [ B^{2} \leq \frac{49152}{12} ] \Leftrightarrow [ B^{2} \leq 4096 ] \Leftrightarrow [ B \leq \sqrt{4096} ] 
+\]
+\[
+ B \leq 64
+\]
+\subsubsection{Taille de B pour le cache L2}
+\[
+  [ B^{2} \leq \frac{1048576}{12} ] \Leftrightarrow [ B^{2} \leq 87381 ] \Leftrightarrow [ B \leq \sqrt{87381} ]
+\]
+\[
+  B \leq 295
+\]
+\subsubsection{Taille de B pour le cache L3}
+\[
+  [ B^{2} \leq \frac{8388608}{12} ] \Leftrightarrow [ B^{2} \leq 699050 ] \Leftrightarrow [ B \leq \sqrt{699050} ]
+\]
+\[
+  B \leq 836
+\]
+
+\subsubsection{Résultats}
+On a donc 64 pour la taille du bloc pour le cache L1, 295 pour le cache L2 et 836 pour le cache L3.
+
+\subsection{Benchmark de matrix multiply avec différentes tailles de B}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Taille de bloc & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{base} & \textbf{ 4.4125 } & \textbf{1} \\
+    L1 & 5.9125 & 0.74 \\
+    L2 & 6.8575 & 0.64 \\
+    L3 & 7.59 & 0.58 \\
+  \end{tabular}
+  \caption{Évolution du temps moyen d'exécution en fonction de la taille des blocs.}
+\end{table}
+On note donc que plus on avance dans les caches, plus le temps d'exécution devient long, ce qui est normal, car le temps d'accès aux caches est inversement proportionnel à sa taille. 
+De plus le tuilage donne de pire performances que la version initiale sans tuilage, ce manque de performances pourrait être compensé par une permutation des boucles.
+
+\subsubsection*{Permutation de boucles source}
+Dans cette partie sera présente les effets de permutation de boucles pour les différentes tailles de bloc, à travers des tableaux de moyenne de temps et taux d'accélération.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Ordre des boucles & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{(i,j,k)} & \textbf{ 5.055 } & \textbf{1} \\
+    (i,k,j) & 3.2775 & 1.54 \\
+    (j,i,k) & 5.0075 & 1.01 \\
+    (j,k,i) & 5.7525 & 0.87 \\
+    (k,i,j) & 3.275 & 1.54 \\
+    (k,j,i) & 5.7775 & 0.87 \\
+  \end{tabular}
+  \label{Tableau 1}
+  \caption{Évolution du temps moyen d'exécution en fonction de la permutation de boucles sur la taille de bloc L1.}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Ordre des boucles & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{(i,j,k)} & \textbf{ 6.835 } & \textbf{1} \\
+    (i,k,j) & 2.82 & 2.42 \\
+    (j,i,k) & 6.975 & 0.97 \\
+    (j,k,i) & 5.9125 & 1.15 \\
+    (k,i,j) & 2.825 & 2.41 \\
+    (k,j,i) & 5.86 & 1.16 \\
+  \end{tabular}
+  \label{Tableau 2}
+  \caption{Évolution du temps moyen d'exécution en fonction de la permutation de boucles sur la taille de bloc L2.}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Ordre des boucles & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{(i,j,k)} & \textbf{ 7.69 } & \textbf{1} \\
+    (i,j,k) & 2.81 & 2.73 \\
+    (j,i,k) & 7.6775 & 1.00 \\
+    (j,k,i) & 20.8 & 0.36 \\
+    (k,i,j) & 2.965 & 2.59 \\
+    (k,j,i) & 20.33 & 0.37 \\
+  \end{tabular}
+  \label{Tableau 3}
+  \caption{Évolution du temps moyen d'exécution en fonction de la permutation de boucles sur la taille de bloc L3.}
+\end{table}
+
+Avec ces benchmarks, on remarque donc que les ordres de boucles les plus optimisés sont (i,j,k) et (k,i,j), 
+ce qui colle avec la théorie détaillée plus tôt, et donne des résultats plutot similaires aux résultats sans le tuilage.\newline
+Cependant on remarque que certains ordres offrent de très mauvaises performances, et ce de manière générale, (j,k,i) et (k,j,i).
+
+\subsubsection*{Tuilage avec -floop-block}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{ l|c|r }
+    Taille de bloc & Moyenne temps globaux & Taux d'accélération \\
+    \hline
+    \textbf{base} & \textbf{ 4.66 } & \textbf{1} \\
+    L1 & 4.92 & 0.94 \\
+    L2 & 6.8575 & 0.67 \\
+    L3 & 7.7075 & 0.60 \\
+    floop\_block & 12.6525 & 0.36 \\
+  \end{tabular}
+  \caption{Évolution du temps moyen d'exécution en fonction de la taille des blocs ou de l'option -floop-block.}
+\end{table}
+
+On constate donc, qu'avec -O2 ainsi qu'avec -floop-block, on observe de bien pires résultats qu'avec le tuilage manuel ou encore une exécution sans tuilage.
+
+\section{Conclusion}
+Au cours de ces expériences, nous avons exploré diverses méthodes d'optimisation centrées sur les boucles. Dans un premier temps, nous avons étudié le déroulage et la fusion de boucles, qui simplifient et réduisent le coût des calculs répétitifs. Ensuite, nous nous sommes intéressés aux permutations de boucles, lesquelles nous ont permis de mieux organiser ces structures en fonction des contraintes imposées par la hiérarchie mémoire. 
+\newline
+Enfin, l’étude approfondie du tuilage de boucles nous a offert une compréhension plus fine du fonctionnement des caches et du transit des données à travers les différentes couches de la mémoire. Ces techniques se révèlent essentielles pour maximiser les performances des programmes, en exploitant efficacement les ressources matérielles disponibles.
+\end{document}

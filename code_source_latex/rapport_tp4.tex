@@ -1,0 +1,109 @@
+\documentclass{rapport}
+\usepackage[utf8]{inputenc}
+
+\usepackage{pifont} % Pour les symboles appelés par la macro \ding
+\usepackage{url} % Comme son nom l'indique, pour les url...
+
+\usetikzlibrary{positioning} % Bibliothèque tikz pour positionner des nœuds relativement à d'autres
+
+\usepackage[colorlinks, citecolor=red!60!green, linkcolor=blue!60!green, urlcolor=magenta]{hyperref} % Pour que les liens soient cliquables. Les options permettent de mettre les liens en couleur.
+
+\usepackage{algorithm}
+\usepackage{algo}
+\usepackage{colorationSyntaxique}
+
+
+% Pour un rapport en français 
+\usepackage[francais]{babel} % Commenter pour un rapport en anglais
+\renewcommand\bibsection{\section*{Bibliographie}} % Commenter pour un rapport en anglais
+
+% \englishTitlePage % Décommenter pour une page de titre en anglais
+
+
+\pagestyle{fancy}
+\renewcommand{\sectionmark}[1]{\markboth{\thesection.\ #1}{}}
+\fancyfoot{}
+
+\fancyhead[LE]{\textsl{\leftmark}}
+\fancyhead[RE, LO]{\textbf{\thepage}}
+\fancyhead[RO]{\textsl{\rightmark}}
+
+\def\Latex{\LaTeX\xspace}
+\def\etc{\textit{etc.}\xspace}
+
+
+
+\title{Mesure et analyse de la consommation d’énergie électrique des programmes}
+\author{Francois Flandin}
+\supervisor{Pr Sid Touati}
+\date{Premier semestre de l'annee 2024-2025}
+
+% \universityname{Université Côte d'Azur} % Nom de l'université.
+\type{TP} % Type de document
+% \formation{Master Informatique} % Nom de la formation
+
+% Retrouver les autres options possibles dans le document rapport.pdf
+
+\begin{document}
+
+    \maketitle
+    
+    \clearpage
+    \tableofcontents
+    
+    \clearpage
+    
+    \section{Introduction}
+    L’objectif de ce TP est d’analyser la consommation d’énergie électrique des programmes en utilisant l’outil EcoFloc. Cet exercice pratique nous permet de mieux comprendre l’impact des choix de compilateurs et des optimisations sur l’efficacité énergétique et les performances d’exécution.\newline Pour cela, plusieurs types de programmes ont été étudiés : des micro-benchmarks focalisés sur les calculs CPU (CPU-bound), d’autres centrés sur les accès mémoire (Memory-bound), et enfin des programmes intégrant des appels système.\newline En générant des versions binaires optimisées à différents niveaux et en mesurant les résultats à l’aide d’EcoFloc, ce TP vise à établir des corrélations entre le temps d’exécution, la consommation énergétique, et les caractéristiques des programmes.\newline Ce rapport retrace les étapes suivies, les résultats obtenus, et les conclusions tirées de ces expériences.
+    
+    \section{Micro-benchmarks \textit{CPU-bound}}
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{c|c|c}
+         Niveau d'optimisation & Compilateur & Consommation moyenne (en Watts) \\
+         \hline
+         \texttt{-O0} & gcc & 0,1425 \\
+         \texttt{-O0} & icx & 0,145 \\
+         \hline
+         \texttt{-O1} & gcc & 0,1375 \\
+         \texttt{-O1} & icx & 0,1475 \\
+         \hline
+         \texttt{-O2} & gcc & 0,14 \\
+         \texttt{-O2} & icx & 0,14 \\
+         \hline
+         \texttt{-O3} & gcc & 0,1425 \\
+         \texttt{-O3} & icx & 0,145 \\
+         \hline
+         \texttt{-Os} & gcc & 0,1425 \\
+         \texttt{-Os} & icx & 0,1475 \\
+        \end{tabular}
+    \end{table}
+
+    \section{Micro-benchmarks \textit{Memory-bound}}
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{c|c|c}
+         Niveau d'optimisation & Compilateur & Consommation moyenne (en Watts) \\
+         \hline
+         \texttt{-O0} & gcc & 0,1425 \\
+         \texttt{-O0} & icx & 0,1425 \\
+         \hline
+         \texttt{-O1} & gcc & 0,1475 \\
+         \texttt{-O1} & icx & 0,14 \\
+         \hline
+         \texttt{-O2} & gcc & 0,15 \\
+         \texttt{-O2} & icx & 0,145 \\
+         \hline
+         \texttt{-O3} & gcc & 0,1475 \\
+         \texttt{-O3} & icx & 0,1425 \\
+         \hline
+         \texttt{-Os} & gcc & 0,145 \\
+         \texttt{-Os} & icx & 0,1425 \\
+        \end{tabular}
+    \end{table}
+
+    \section{Conclusion}
+    Au cours de ces experiences, on constate donc qu'il y a très peu d'améliorations ou d'évolutions dans les consommations éléctrique des programmes, cela est sans doute dû à la nature imprécise de la mesure d'\texttt{ecofloc}, ou à la façon de mesurer, peut-être que réaliser une boucle infinie ne permet pas de pleinement profiter des optimisations offertes par les compilateurs.
+    
+    
+\end{document}
